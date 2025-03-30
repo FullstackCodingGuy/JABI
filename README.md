@@ -2,6 +2,12 @@
 > Personal task management assistant.
 
 
+Running gemma model locally,
+First ensure your ollama instance is running
+```
+ollama pull gemma:2b
+```
+
 
 To build an **AI-powered personal assistant** for mobile, follow these steps:  
 
