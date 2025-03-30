@@ -105,203 +105,136 @@ async def chat(prompt: str):
 
 ---
 
+### **Integrating Gemma for Intent Recognition in a Personal Assistant**  
 
-### **Engaging an LLM for Handling Actions in TypeScript**  
-
-To make an **LLM-powered personal assistant** capable of executing actions (e.g., setting reminders, sending messages, controlling IoT devices), we follow these steps:  
+To use **Gemma** for **intent recognition** in your personal assistant, follow these steps:  
 
 ---
 
-## **🔹 1. Approach to Handling Actions**
+## **🔹 1. Approach to Intent Recognition**
+### ✅ **Steps**:
 1️⃣ **User Input** → The assistant receives a **text command**  
-2️⃣ **Intent Recognition** → The LLM **extracts intent** from the query  
-3️⃣ **Function Mapping** → Matches intent to a **predefined function**  
-4️⃣ **Action Execution** → Calls the function or API to **perform the task**  
-5️⃣ **LLM Response** → Generates a response to confirm the action  
+2️⃣ **Gemma Processes the Input** → The LLM **analyzes intent**  
+3️⃣ **Intent Classification** → Matches the query to a **predefined action**  
+4️⃣ **Execute Action** → Calls the function or API  
+5️⃣ **Generate Response** → LLM confirms the action  
 
 ---
 
-## **🔹 2. Implementation in TypeScript**
-We can implement **action handling** in TypeScript using:
-- **OpenAI function calling** *(Cloud-based)*
-- **Local LLMs with intent matching** *(Offline)*
-- **Hybrid approach (LLM + Rule-based functions)**  
+## **🔹 2. Running Gemma Locally for Intent Recognition**
+Since **Gemma is an open-source model**, you can run it locally using **Ollama** or **Hugging Face Transformers**.
 
----
+### **🛠️ Step 1: Install Ollama (For Local Inference)**
+```sh
+# Install Ollama (Mac/Linux)
+curl -fsSL https://ollama.com/install.sh | sh
 
-### **🛠️ Approach 1: OpenAI Function Calling (Cloud-based)**
-OpenAI's GPT-4-turbo allows **structured function calls** based on user intent.
-
-#### **🔹 Example: Automating a To-Do List**
-```typescript
-import { OpenAI } from "openai";
-
-// Initialize OpenAI API
-const openai = new OpenAI({ apiKey: "YOUR_OPENAI_API_KEY" });
-
-// Define available actions
-const functions = [
-  {
-    name: "addTask",
-    description: "Add a task to the to-do list",
-    parameters: {
-      type: "object",
-      properties: {
-        task: { type: "string", description: "The task description" },
-        dueDate: { type: "string", description: "Due date for the task" }
-      },
-      required: ["task"]
-    }
-  }
-];
-
-// Action Handler
-async function processResponse(userQuery: string) {
-  const response = await openai.chat.completions.create({
-    model: "gpt-4-turbo",
-    messages: [{ role: "user", content: userQuery }],
-    functions
-  });
-
-  const functionCall = response.choices[0].message?.function_call;
-
-  if (functionCall) {
-    const { name, arguments: args } = functionCall;
-    const params = JSON.parse(args ?? "{}");
-
-    if (name === "addTask") {
-      return `Task added: ${params.task}, Due: ${params.dueDate || "No date provided"}`;
-    }
-  }
-
-  return response.choices[0].message?.content ?? "Could not process request.";
-}
-
-// Example usage
-processResponse("Remind me to buy groceries tomorrow").then(console.log);
+# Install Gemma model
+ollama pull gemma:2b
 ```
 
-✅ **LLM decides when to call the function**  
-✅ **Structured JSON response ensures correct execution**  
-
----
-
-### **🛠️ Approach 2: Local LLM with Intent Matching**
-For **offline AI assistants**, we can use **regex-based intent detection** and call predefined functions.
-
-#### **🔹 Example: Recognizing User Intent and Executing Actions**
+### **🛠️ Step 2: Process User Queries with Intent Detection**
 ```typescript
-// Define action functions
-function setAlarm(time: string): string {
-  return `Alarm set for ${time}.`;
+import fetch from "node-fetch";
+
+// Function to call Gemma LLM
+async function callGemma(prompt: string): Promise<string> {
+  const response = await fetch("http://localhost:11434/api/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ model: "gemma:2b", prompt })
+  });
+
+  const data = await response.json();
+  return data.response.trim();
 }
 
-function sendEmail(recipient: string, subject: string): string {
-  return `Email sent to ${recipient} with subject: ${subject}.`;
-}
-
-// Intent-action mapping
-const actionMap: { [key: string]: Function } = {
-  "set an alarm for (\\d{1,2}:\\d{2} [APap][Mm])": setAlarm,
-  "send an email to (\\S+) with subject (.+)": sendEmail
+// Define Intent Handlers
+const intentHandlers: { [key: string]: Function } = {
+  "set_alarm": (time: string) => `Alarm set for ${time}.`,
+  "send_email": (recipient: string, subject: string) =>
+    `Email sent to ${recipient} with subject: ${subject}.`,
 };
 
-// Function to process user commands
-function processCommand(command: string): string {
-  for (const pattern in actionMap) {
-    const regex = new RegExp(pattern, "i");
-    const match = command.match(regex);
+// Function to recognize intent
+async function processIntent(userQuery: string): Promise<string> {
+  const prompt = `
+  Classify the intent of the following message into one of these intents: 
+  - set_alarm
+  - send_email
+  - unknown
 
-    if (match) {
-      return actionMap[pattern](...match.slice(1));
+  Message: "${userQuery}"
+  Response (JSON): 
+  `;
+
+  const response = await callGemma(prompt);
+  console.log("LLM Response:", response);
+
+  try {
+    const result = JSON.parse(response);
+    if (intentHandlers[result.intent]) {
+      return intentHandlers[result.intent](...(result.parameters || []));
     }
+  } catch (e) {
+    console.error("Error parsing response:", e);
   }
 
   return "Sorry, I couldn't understand the request.";
 }
 
-// Example usage
-console.log(processCommand("Set an alarm for 6:30 AM"));
-console.log(processCommand("Send an email to john@example.com with subject Meeting Update"));
+// Example Usage
+processIntent("Set an alarm for 6 AM").then(console.log);
+processIntent("Send an email to john@example.com with subject Meeting").then(console.log);
 ```
 
-✅ **Works offline with a small LLM**  
-✅ **Regex-based intent recognition** for quick command execution  
+✅ **Runs fully locally using Gemma 2B**  
+✅ **Extracts intent & executes predefined functions**  
 
 ---
 
-### **🛠️ Approach 3: Hybrid (LLM + Rule-Based Execution)**
-For a **real-world personal assistant**, we use:
-- **LLM for understanding complex queries** (e.g., "Remind me to call John at 5 PM")
-- **Rule-based execution for simple actions** (e.g., setting an alarm)
+## **🔹 3. Fine-Tuning Gemma for Better Intent Recognition**
+For **better accuracy**, train Gemma on **custom intent datasets**.
 
-#### **🔹 Example: Combining LLM & Rule-Based Execution**
-```typescript
-async function processHybridCommand(userQuery: string) {
-  const response = await openai.chat.completions.create({
-    model: "gpt-4-turbo",
-    messages: [{ role: "user", content: userQuery }],
-    functions: [
-      {
-        name: "setAlarm",
-        description: "Set an alarm at a specified time",
-        parameters: { type: "object", properties: { time: { type: "string" } }, required: ["time"] }
-      },
-      {
-        name: "sendEmail",
-        description: "Send an email",
-        parameters: {
-          type: "object",
-          properties: { recipient: { type: "string" }, subject: { type: "string" } },
-          required: ["recipient", "subject"]
-        }
-      }
-    ]
-  });
+### **🛠️ Steps to Fine-Tune with Hugging Face**
+1️⃣ **Prepare labeled dataset (text → intent mappings)**  
+2️⃣ **Use Hugging Face `transformers` to fine-tune Gemma**  
+3️⃣ **Deploy the fine-tuned model locally**  
 
-  const functionCall = response.choices[0].message?.function_call;
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments, Trainer
 
-  if (functionCall) {
-    const params = JSON.parse(functionCall.arguments ?? "{}");
+# Load Gemma model & tokenizer
+model_name = "google/gemma-2b"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
 
-    switch (functionCall.name) {
-      case "setAlarm":
-        return setAlarm(params.time);
-      case "sendEmail":
-        return sendEmail(params.recipient, params.subject);
-    }
-  }
+# Example dataset (fine-tuning intent classification)
+dataset = [
+    {"input": "Set an alarm for 7 AM", "intent": "set_alarm"},
+    {"input": "Remind me to call Alex", "intent": "set_reminder"},
+    {"input": "Send an email to John with subject Urgent", "intent": "send_email"},
+]
 
-  return "Command not recognized.";
-}
+# Convert dataset into tokenized format
+def tokenize_function(example):
+    return tokenizer(example["input"], padding="max_length", truncation=True)
 
-// Example usage
-processHybridCommand("Set an alarm for 7 AM").then(console.log);
-processHybridCommand("Send an email to alex@example.com with subject Report").then(console.log);
+# Train model (if needed)
+training_args = TrainingArguments(output_dir="./results", per_device_train_batch_size=4, num_train_epochs=3)
+trainer = Trainer(model=model, args=training_args, train_dataset=dataset)
+
+trainer.train()
 ```
 
-✅ **Combines AI reasoning with direct execution**  
-✅ **Efficient & scalable for mobile assistants**  
+✅ **Fine-tunes Gemma for intent classification**  
+✅ **Improves accuracy for specific use cases**  
 
 ---
 
-## **🔹 3. Deploying in a Mobile App**
-To integrate this into a **React Native / Flutter** mobile app:
-- **Backend**: Host the LLM processing using **FastAPI / Express.js**
-- **Frontend**: Use **React Native** to send API requests
-- **Voice Integration**: Use **Google TTS / Whisper** for voice input/output
+## **🔹 4. Deploying in a Mobile App**
+To integrate with a **mobile assistant (Flutter/React Native)**:
+- **Backend**: Run Gemma on **FastAPI/Node.js**  
+- **Frontend**: Send API requests for **intent recognition & action execution**  
+- **Voice Integration**: Use **Google TTS / Whisper for voice input/output**  
 
----
-
-## **🚀 Next Steps**
-1️⃣ **Choose cloud-based or local LLM**  
-2️⃣ **Implement function calling or rule-based execution**  
-3️⃣ **Optimize LLM responses for mobile latency**  
-4️⃣ **Integrate with a mobile app (React Native / Flutter)**  
-
-Would you like a **React Native UI example** next? 🚀
-
-## **🔹 4. Deploy the AI Assistant**  
-✅ **On-Device (Faster, Private)** → Use **Gemma 2B / Mistral 7B**  
-✅ **Cloud-Based (More Powerful)** → Use **OpenAI / Claude API**  
-✅ **Hybrid (Best of Both Worlds)** → Cache common queries, offload complex tasks to the cloud  
