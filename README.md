@@ -1,2 +1,2 @@
-# JustABot
-Just a bot idea - personal task management assistant.
+# Just A Bot Idea
+> Personal task management assistant.
