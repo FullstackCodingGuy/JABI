@@ -1,0 +1,269 @@
+{
+	"info": {
+		"_postman_id": "c5539618-c6e0-410a-a449-fa5872ad8be5",
+		"name": "NoteBot-API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "43587657"
+	},
+	"item": [
+		{
+			"name": "Intent Finding",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/prompts?q=Schedule a Google Meet with David tomorrow at 3 PM.",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"prompts"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "Book a flight from New York to Los Angeles on April 10",
+							"disabled": true
+						},
+						{
+							"key": "q",
+							"value": "what is the weather in india",
+							"disabled": true
+						},
+						{
+							"key": "q",
+							"value": "set alarm next monday morning 6AM and repeat mode daily",
+							"disabled": true
+						},
+						{
+							"key": "q",
+							"value": "Get me two quantity Margherita pizza from Domino's at 7 PM",
+							"disabled": true
+						},
+						{
+							"key": "q",
+							"value": "get me the chicken briyani, chicken tandoori and 2 diet coke for dinner at 9pm from briyani zone restaurant.",
+							"disabled": true
+						},
+						{
+							"key": "q",
+							"value": "setup a meeting with john doe(john.doe@gmail.com) on first monday next month at 10am to 11am, include user1@gmail.com and user2@gmail.com for the discussing next steps on the report modernization journey",
+							"disabled": true
+						},
+						{
+							"key": "q",
+							"value": "Schedule a Google Meet with David tomorrow at 3 PM."
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Documents",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"docs\": [\n        {\n            \"title\": \"macbook is slow\",\n            \"content\": \"2019 macbook is running very slow after restart\",\n            \"type\": \"kb\",\n            \"category\": \"Apple Laptop\"\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/articles",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"articles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Import JSON Data",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/sync",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"sync"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Gemma-Prompt",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"model\": \"gemma:2b\",\n  \"prompt\": \"can you help code in typescript?\",\n  \"max_tokens\": 200,\n  \"stream\": false\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:11434/api/generate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "11434",
+					"path": [
+						"api",
+						"generate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Intent Recognition",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"model\": \"gemma:2b\",\n  \"prompt\": \"Classify intent for: 'Remind me to buy groceries at 5 PM'\",\n  \"max_tokens\": 100,\n  \"stream\": false\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:11434/api/generate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "11434",
+					"path": [
+						"api",
+						"generate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Task Classification",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"model\": \"gemma:2b\",\n  \"prompt\": \"Classify: 'This is the best phone I’ve ever bought!' into categories: positive, negative, neutral.\",\n  \"max_tokens\": 50,\n  \"stream\": false\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:11434/api/generate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "11434",
+					"path": [
+						"api",
+						"generate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Task Action",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"model\": \"gemma:2b\",\n  \"prompt\": \"User said: 'Turn off the living room lights' - Identify action.\",\n  \"max_tokens\": 50,\n  \"stream\": false\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:11434/api/generate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "11434",
+					"path": [
+						"api",
+						"generate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Multilingual Translation",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"model\": \"gemma:2b\",\n  \"prompt\": \"Translate 'Hello, how are you?' into chinese.\",\n  \"max_tokens\": 50,\n  \"stream\": false\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:11434/api/generate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "11434",
+					"path": [
+						"api",
+						"generate"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
