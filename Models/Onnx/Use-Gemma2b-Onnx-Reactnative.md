@@ -195,3 +195,145 @@ Now use **`gemma-2b-quantized.onnx`** instead of `gemma-2b.onnx`.
 | 🔥 Model | **Gemma 2B (converted to ONNX)** |
 
 Now **Gemma 2B runs locally** on mobile using ONNX Runtime in **React Native**! 🎯  
+
+--- 
+
+
+## Troubleshooting steps
+
+It looks like **ONNX is not installed** in your Python environment. To fix this, follow these steps:
+
+---
+
+### **🔹 Step 1: Install ONNX and Dependencies**
+Run the following command in your terminal:
+```sh
+pip install onnx onnxruntime onnxruntime-tools
+```
+If you need **GPU acceleration**, install the GPU version:
+```sh
+pip install onnxruntime-gpu
+```
+
+---
+
+### **🔹 Step 2: Verify ONNX Installation**
+Run this command in Python:
+```python
+import onnx
+print(onnx.__version__)
+```
+If this prints a version number, **ONNX is installed correctly**.
+
+---
+
+### **🔹 Step 3: Install Additional Dependencies (If Needed)**
+If you are using **Hugging Face Transformers and Optimum**, install:
+```sh
+pip install transformers optimum
+```
+
+---
+
+### **🔹 Step 4: Retry Converting Gemma 2B to ONNX**
+Now, run your **ONNX model conversion** script again:
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from optimum.onnxruntime import ORTModelForCausalLM
+import torch
+
+model_name = "google/gemma-2b"
+
+# Load the Gemma model
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+# Export to ONNX
+onnx_model_path = "gemma-2b.onnx"
+ORTModelForCausalLM.from_pretrained(model, save_directory=onnx_model_path, export=True)
+
+print(f"Gemma 2B converted to ONNX at {onnx_model_path}")
+```
+
+---
+
+### **💡 If You Still Face Issues**
+1. **Check Python Version**  
+   Ensure you're using **Python 3.8+**:
+   ```sh
+   python --version
+   ```
+
+2. **Check Virtual Environment**  
+   If you're using a **virtual environment**, activate it before installing:
+   ```sh
+   source venv/bin/activate  # For macOS/Linux
+   venv\Scripts\activate      # For Windows
+   ```
+
+3. **Check `pip` Version**  
+   ```sh
+   python -m pip install --upgrade pip
+   ```
+
+---
+
+
+It looks like the **Transformers** library is missing from your Python environment. You need to install it before running your script.
+
+---
+
+### **🔹 Step 1: Install `transformers`**
+Run the following command in your terminal:
+```sh
+pip install transformers
+```
+
+If you're using ONNX, also install `optimum`:
+```sh
+pip install optimum
+```
+
+For **GPU acceleration**, install:
+```sh
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
+*(Make sure your CUDA version matches your PyTorch installation.)*
+
+---
+
+### **🔹 Step 2: Verify Installation**
+After installation, check if `transformers` is available:
+```python
+import transformers
+print(transformers.__version__)
+```
+If this prints a version number, **installation was successful**.
+
+---
+
+### **🔹 Step 3: Re-run Your ONNX Model Script**
+Now, retry running your ONNX model conversion script.
+
+---
+
+### **💡 Still Facing Issues?**
+1. **Check Python Version**
+   ```sh
+   python --version
+   ```
+   Make sure it's **Python 3.8+**.
+
+2. **Check Virtual Environment**
+   If you're using a virtual environment, activate it first:
+   ```sh
+   source venv/bin/activate  # macOS/Linux
+   venv\Scripts\activate      # Windows
+   ```
+
+3. **Upgrade `pip`**
+   ```sh
+   python -m pip install --upgrade pip
+   ```
+---
+
