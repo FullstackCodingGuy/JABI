@@ -244,3 +244,16 @@ To integrate with a **mobile assistant (Flutter/React Native)**:
 - **Frontend**: Send API requests for **intent recognition & action execution**  
 - **Voice Integration**: Use **Google TTS / Whisper for voice input/output**  
 
+
+
+
+-------------
+
+
+
+- https://www.linkedin.com/pulse/running-ai-models-locally-ollama-jerome-lecomte-kuwuf/
+- https://ollama.com/blog/openai-compatibility
+- https://ollama.com/library/codellama
+- https://www.datacamp.com/tutorial/deepseek-r1-ollama
+- https://medium.com/@tubelwj/complete-guide-to-running-ollamas-large-language-model-llm-locally-part-1-97f936da4eb0
+- https://github.com/ollama/ollama-js
