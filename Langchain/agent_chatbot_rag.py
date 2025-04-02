@@ -23,8 +23,24 @@ class ChatRequest(BaseModel):
 
 # Define tools
 def web_search(query):
-    response = requests.get(f"https://api.duckduckgo.com/?q={query}&format=json")
-    return response.json().get("Abstract", "No relevant information found.")
+    """Perform a Google search using the Google Search API."""
+    url = "https://www.googleapis.com/customsearch/v1"
+    params = {
+        "q": query,
+        "key": "your key",
+        "cx": "your search engine's cse id",
+        "num": 1  # Limit results to 1 for efficiency
+    }
+    
+    response = requests.get(url, params=params)
+    data = response.json()
+    
+    print(data)  # Debugging line
+    if "items" in data:
+        return data["items"][0]["snippet"]
+    return "No relevant information found."
+    # response = requests.get(f"https://api.duckduckgo.com/?q={query}&format=json")
+    # return response.json().get("Abstract", "No relevant information found.")
 
 def run_python(code):
     try:
@@ -87,8 +103,11 @@ def agent_logic(state):
     query = state["query"].lower()
     chat_history = state.get("chat_history", [])
 
+    print(f"User query: {query}")  # Debugging line
+
     if "search" in query:
         response = web_search(query.replace("search", "").strip())
+        print(f"Web search response: {response}")  # Debugging line
     elif "calculate" in query or "run python" in query:
         code = query.replace("calculate", "").replace("run python", "").strip()
         response = run_python(code)
