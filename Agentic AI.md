@@ -1,5 +1,9 @@
 **Agentic AI** systems involve multiple components that enable autonomy, reasoning, decision-making, and interaction with the environment. Here’s a **breakdown of the key components**:  
 
+<img width="903" alt="image" src="https://github.com/user-attachments/assets/38b131cc-ed69-42cb-805c-bfde739f6d81" />
+
+<img width="599" alt="image" src="https://github.com/user-attachments/assets/33ecd62a-ac96-464b-8553-28da9399f342" />
+
 ---
 
 ### **🚀 Core Components of Agentic AI**  
