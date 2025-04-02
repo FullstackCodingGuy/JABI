@@ -267,7 +267,186 @@ API available at: **http://localhost:8000/chat?query=your+question**
 2️⃣ **Improve Context Handling** (LangGraph's state persistence)  
 3️⃣ **Integrate AutoGen** (for more advanced AI collaboration)  
 
-Would you like me to **extend this with multi-agent collaboration or a UI frontend?** 🔥
+Let's enhance your **AI chatbot** with **WebSocket streaming** for real-time responses and **Voice-to-Text** for hands-free conversation! 🚀  
+
+---
+
+# **🔥 Enhancements**
+✅ **🔴 Streaming Responses** → WebSockets for real-time AI chat  
+✅ **🎙️ Voice-to-Text** → Use **Whisper API** for speech recognition  
+
+---
+
+## **1️⃣ Update FastAPI for WebSocket Streaming**
+📌 **Modify `app.py` to Support Streaming**
+```python
+from fastapi import FastAPI, WebSocket
+from agent_chatbot import chat_with_ai
+import asyncio
+
+app = FastAPI()
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            query = await websocket.receive_text()
+            for word in chat_with_ai(query).split():
+                await websocket.send_text(word + " ")
+                await asyncio.sleep(0.1)  # Simulate real-time response
+    except Exception:
+        await websocket.close()
+```
+---
+
+## **2️⃣ Update React Frontend for WebSockets**
+📌 **Modify `App.tsx` to Handle Streaming**
+```tsx
+import React, { useState, useEffect, useRef } from "react";
+
+const App: React.FC = () => {
+  const [query, setQuery] = useState("");
+  const [response, setResponse] = useState("");
+  const ws = useRef<WebSocket | null>(null);
+
+  useEffect(() => {
+    ws.current = new WebSocket("ws://localhost:8000/ws");
+    ws.current.onmessage = (event) => setResponse((prev) => prev + event.data);
+    return () => ws.current?.close();
+  }, []);
+
+  const handleChat = () => {
+    setResponse(""); // Clear previous response
+    ws.current?.send(query);
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white">
+      <h1 className="text-2xl font-bold mb-4">AI Chatbot</h1>
+      <input
+        className="border p-2 rounded w-96 text-black"
+        placeholder="Ask me anything..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+      <button onClick={handleChat} className="mt-2 bg-blue-500 p-2 rounded">
+        Send
+      </button>
+      <div className="mt-4 p-4 bg-gray-800 rounded w-96">{response}</div>
+    </div>
+  );
+};
+
+export default App;
+```
+---
+
+## **3️⃣ Add Voice-to-Text with Whisper**
+📌 **Install OpenAI Whisper API**
+```bash
+pip install openai
+```
+
+📌 **Modify `app.py` to Handle Voice Input**
+```python
+from fastapi import UploadFile, File
+import openai
+
+OPENAI_API_KEY = "your_openai_api_key"
+
+@app.post("/transcribe/")
+async def transcribe_audio(file: UploadFile = File(...)):
+    audio_data = file.file.read()
+    response = openai.Audio.transcribe("whisper-1", audio_data, api_key=OPENAI_API_KEY)
+    return {"text": response["text"]}
+```
+---
+
+## **4️⃣ Add Voice Input in React**
+📌 **Modify `App.tsx` to Use Microphone**
+```tsx
+import React, { useState } from "react";
+import axios from "axios";
+
+const App: React.FC = () => {
+  const [query, setQuery] = useState("");
+  const [response, setResponse] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+
+  const handleTranscription = async (audioBlob: Blob) => {
+    const formData = new FormData();
+    formData.append("file", audioBlob, "audio.webm");
+    const res = await axios.post("http://localhost:8000/transcribe/", formData);
+    setQuery(res.data.text);
+  };
+
+  const handleVoice = async () => {
+    setIsRecording(true);
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mediaRecorder = new MediaRecorder(stream);
+    const audioChunks: Blob[] = [];
+
+    mediaRecorder.ondataavailable = (event) => audioChunks.push(event.data);
+    mediaRecorder.onstop = () => handleTranscription(new Blob(audioChunks, { type: "audio/webm" }));
+
+    mediaRecorder.start();
+    setTimeout(() => {
+      mediaRecorder.stop();
+      setIsRecording(false);
+    }, 5000); // 5 seconds recording
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white">
+      <h1 className="text-2xl font-bold mb-4">AI Chatbot</h1>
+      <input
+        className="border p-2 rounded w-96 text-black"
+        placeholder="Ask me anything..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+      <button onClick={handleVoice} className="mt-2 bg-green-500 p-2 rounded">
+        {isRecording ? "Recording..." : "🎤 Speak"}
+      </button>
+      <button onClick={() => ws.current?.send(query)} className="mt-2 bg-blue-500 p-2 rounded">
+        Send
+      </button>
+      <div className="mt-4 p-4 bg-gray-800 rounded w-96">{response}</div>
+    </div>
+  );
+};
+
+export default App;
+```
+---
+
+## **5️⃣ Run Everything**
+📌 **Start FastAPI Backend**
+```bash
+uvicorn app:app --reload
+```
+📌 **Start React Frontend**
+```bash
+cd ai-chatbot
+npm start
+```
+🎉 **Visit:** `http://localhost:3000` to chat and use voice input!
+
+---
+
+# **🚀 Final Features**
+✅ **Real-Time Streaming Chat with WebSockets**  
+✅ **Voice-to-Text Support via OpenAI Whisper**  
+✅ **Multi-Agent CrewAI for AI Task Coordination**  
+✅ **React Chat UI with Microphone Input**  
+
+---
+
+# **🔥 Next Steps?**
+1️⃣ **Deploy to Cloud (AWS, Vercel, Firebase)**  
+2️⃣ **Text-to-Speech (TTS) for AI Responses**  
+3️⃣ **Mobile App Version (React Native)**  
 
 -----
 We'll build a **corporate-themed AI agent** with:  
